@@ -1,0 +1,39 @@
+Vagrant.configure("2") do |config|
+  # Especificar la imagen de la VM
+  config.vm.box = "ubuntu/focal64"  # Ubuntu 20.04 LTS
+
+  # Configurar red para acceder a la app desde el host
+  config.vm.network "forwarded_port", guest: 3000, host: 3000  # Ajusta el puerto según tu app
+
+  # Configurar la VM con más memoria y CPUs si es necesario
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.cpus = 2
+  end
+
+  # Configurar el aprovisionamiento
+  config.vm.provision "shell", inline: <<-SHELL
+    # Actualizar e instalar dependencias necesarias
+    sudo apt-get update -y
+    sudo apt-get install -y git curl
+    
+    # Instalar Docker y Docker Compose
+    sudo apt-get install -y docker.io
+    sudo usermod -aG docker vagrant
+    sudo systemctl enable docker
+    sudo systemctl start docker
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+
+    # Clonar el repositorio desde GitHub
+    git clone https://github.com/L-DevOps-01/11640-TASK-MANAGER.git /home/vagrant/app
+
+
+    # Moverse al directorio de la app
+    cd /home/vagrant/app
+
+    # Construir y ejecutar el contenedor con Docker
+    sudo docker build -t task-manager .
+    sudo docker run -d -p 3000:3000 task-manager
+  SHELL
+end
