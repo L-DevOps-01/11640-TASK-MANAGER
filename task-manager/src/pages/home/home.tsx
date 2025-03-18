@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import ColumnCards from "../../components/column-cards/column-cards";
 import { Task } from "../../components/card-task/card-task";
+import { ToastContainer } from "react-toastify"; // Importamos React-Toastify
+import { ToastNotif } from "../../components/toast-notification/toast-notification";
 import { DndContext, DragEndEvent } from "@dnd-kit/core"; // Importamos DndContext y el tipo DragEndEvent
 import "./home.scss";
 
@@ -29,6 +31,7 @@ const Home: React.FC = () => {
     ];
     setColumns(initialColumns);
   }, []);
+
   const handleAddTask = (
     columnId: number,
     title: string,
@@ -47,6 +50,9 @@ const Home: React.FC = () => {
         col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col
       )
     );
+
+    // Genera la notificación para la creación de tareas
+    ToastNotif(`Tarea "${title}" creada con éxito`, "success");
   };
   const addColumn = () => {
     const title = inputTitleRef?.current?.value || "";
@@ -116,6 +122,9 @@ const Home: React.FC = () => {
         return col;
       })
     );
+
+    // Muestra la notificación cuando se arrastra una tarea a otra columna
+    ToastNotif(`Tarea ${taskToMove.title} ha pasado al estado ${targetColumn.title}`, "info");
   };
   const getNextId = (): number => {
     const allTasks = columns.flatMap((col) => col.tasks); // Todas las tareas en un solo arreglo
@@ -173,6 +182,8 @@ const Home: React.FC = () => {
           </div>
         </div>
       ) : null}{" "}
+      ;<ToastContainer newestOnTop></ToastContainer>{" "}
+      {/* Container para mostrar notificaciones */}
     </DndContext>
   );
 };
